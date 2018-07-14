@@ -79,7 +79,7 @@ class HackerOne {
 	private function curl($url, $post = array(), $header = array()) {
 		$curl = curl_init($url);
 		
-		curl_setopt($curl, CURLOPT_PROXY, '127.0.0.1:8888');
+//		curl_setopt($curl, CURLOPT_PROXY, '127.0.0.1:8888');
 		
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_HEADER, false);
