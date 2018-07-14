@@ -1,0 +1,10 @@
+{
+  "created_at": "2018-01-01",     // if empty then created_at
+  "triaged": "2018-01-01",        // if empty then created_at
+  "program": "google",
+  "bounty": "100",
+  "bounty_date": "2018-01-01",    // if empty then created_at
+  "bonus": "100",
+  "swag": false,
+  "state": ""                     // Resolved, Informative, Closed, Duplicate
+}
