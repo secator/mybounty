@@ -1,6 +1,6 @@
 <?php
 /**
- * MyBounty v0.0.0.1 (https://secator.com/)
+ * MyBounty v0.0.0.2 (https://secator.com/)
  * Copyright 2018, secator
  * Licensed under MIT (http://en.wikipedia.org/wiki/MIT_License)
  */
@@ -20,6 +20,16 @@ if (isset($_POST['sync'])) {
 define('DB', __DIR__ . '/db/');
 define('DB_H1', DB . 'hackerone/');
 define('DB_OTHER', DB . 'other/');
+define('DB_TIME', DB . 'time/');
+
+
+$time = array();
+function timer($timestamp, &$time) {
+	$date = date('Y-m', strtotime($timestamp));
+	if (empty($time[$date]) && file_exists(DB_TIME . $date)) {
+		$time[date('Y-m-t', strtotime($timestamp))]['hours'] = (int)file_get_contents(DB_TIME . $date);
+	}
+}
 
 $bugs_h1 = glob(DB_H1 . "*");
 define('FIRST_H1', (count($bugs_h1) === 0));
@@ -137,6 +147,7 @@ foreach ($bugs_h1 as $bug) {
 		
 		for ($i = 0, $ic = count($bug['activities']); $i < $ic; $i++) {
 			
+			timer($bug['activities'][ $i ]['created_at'], $time);
 			$created_at = strtotime($bug['activities'][ $i ]['created_at']);
 			
 			foreach ($periods as $period => $format) {
@@ -193,6 +204,8 @@ foreach ($bugs_other as $bug) {
 	
 	foreach (array('all',
 	               $bug['program']) as $program) {
+		
+		timer($bug['created_at'], $time);
 		
 		if (!isset($programs[ $program ])) {
 			$programs[ $program ] = 0;
@@ -346,6 +359,52 @@ arsort($programs);
 
             sync_check();
         });
+        
+        var charts_render = function (type, data) {
+
+            console.log(data);
+            var columns, date, col, id;
+            
+            columns = [];
+
+            id = 'chart_' + type + '';
+            $('> div', charts).append(
+                '<h1>' + type + '</h1>' +
+                '<div id="' + id + '"></div>'
+            );
+
+            for (date in data) {
+                if (columns['x'] === undefined) {
+                    columns['x'] = ['x'];
+                }
+                columns['x'].push(date);
+                for (col in data[date]) {
+                    if (columns[col] === undefined) {
+                        columns[col] = [col];
+                    }
+                    columns[col].push(data[date][col] || null);
+                }
+            }
+
+            c3.generate({
+                bindto: '#' + id,
+                data: {
+                    x: 'x',
+                    columns: Object.values(columns)
+                },
+                axis: {
+                    x: {
+                        type: 'timeseries',
+                        tick: {
+                            format: '%Y-%m-%d'
+                        }
+                    }
+                },
+                zoom: {
+                    enabled: true
+                }
+            });
+        };
 
         var data = <?=json_encode($data)?>,
             programs = <?=json_encode($programs)?>,
@@ -368,57 +427,21 @@ arsort($programs);
 
             var value = $(this).val(),
                 program = programs_select.val(),
-                columns, type, date, col, id;
+                type;
 
             $('> div', charts).html('');
 
             for (type in data[program]) {
-
-                columns = [];
-
-                id = 'chart_' + type + '';
-                $('> div', charts).append(
-                    '<h1>' + type + '</h1>' +
-                    '<div id="' + id + '"></div>'
-                );
-
-                for (date in data[program][type][value]) {
-                    if (columns['x'] === undefined) {
-                        columns['x'] = ['x'];
-                    }
-                    columns['x'].push(date);
-                    for (col in data[program][type][value][date]) {
-                        if (columns[col] === undefined) {
-                            columns[col] = [col];
-                        }
-                        columns[col].push(data[program][type][value][date][col] || null);
-                    }
-                }
-
-                c3.generate({
-                    bindto: '#' + id,
-                    data: {
-                        x: 'x',
-                        columns: Object.values(columns)
-                    },
-                    axis: {
-                        x: {
-                            type: 'timeseries',
-                            tick: {
-                                format: '%Y-%m-%d'
-                            }
-                        }
-                    },
-                    zoom: {
-                        enabled: true
-                    }
-                });
+                charts_render(type, data[program][type][value]);
             }
         }).trigger('change');
 
         programs_select.bind('change', function () {
             periods_select.trigger('change');
         });
+
+        var time = <?=json_encode($time)?>;
+	    charts_render('time', time);
 
     });
 </script>
