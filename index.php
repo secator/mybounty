@@ -10,6 +10,7 @@ ini_set('display_errors', 1);
 set_time_limit(0);
 
 define('PID', sys_get_temp_dir() . '/' . basename(__FILE__) . '.pid');
+@unlink(PID);
 define('SYNC', file_exists(PID));
 
 if (isset($_POST['sync'])) {
@@ -60,11 +61,41 @@ if (isset($_POST['cookie'])) {
 		$bugs = $h1->bugs($sort_direction, $page);
 		if (!empty($bugs['bugs'])) {
 			foreach ($bugs['bugs'] as $bug) {
+				$dir  = DB_H1 . $bug['id'] . '/';
 				$file = DB_H1 . $bug['id'] . '.json';
 				$time = file_exists($file) ? filemtime($file) : 0;
 				if ($time < strtotime($bug['latest_activity'])) {
 					if ($report = $h1->report($bug['id'])) {
 						file_put_contents($file, $report);
+						$report = @json_decode($report, true);
+						$attachments = array();
+						if (!empty($report['attachments'])) {
+							foreach ($report['attachments'] as $attachment) {
+								$attachments[] = array(
+									'id'       => $attachment['id'],
+									'url'      => $attachment['expiring_url'],
+									'filename' => $attachment['file_name'],
+								);
+							}
+						}
+						if (!empty($report['activities'])) {
+							foreach ($report['activities'] as $activity) {
+								if (!empty($activity['attachments'])) {
+									$attachments = array_merge($attachments, $activity['attachments']);
+								}
+							}
+						}
+						
+						if (!empty($attachments)) {
+							if (!is_dir($dir)) {
+								mkdir($dir, 0777);
+								chmod($dir, 0777);
+							}
+							foreach ($attachments as $attachment) {
+								$data = file_get_contents($attachment['url']);
+								file_put_contents($dir . $attachment['id'] . '-' . $attachment['filename'], $data);
+							}
+						}
 					}
 					sleep(1);
 				} else {
@@ -121,6 +152,10 @@ $charts['bounty']   = $charts['activity'];
 $data = array();
 
 foreach ($bugs_h1 as $bug) {
+	
+	if (is_dir($bug)) {
+		continue;
+	}
 	
 	$bug = json_decode(file_get_contents($bug), true);
 	
