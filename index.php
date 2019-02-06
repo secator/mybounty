@@ -10,7 +10,6 @@ ini_set('display_errors', 1);
 set_time_limit(0);
 
 define('PID', sys_get_temp_dir() . '/' . basename(__FILE__) . '.pid');
-@unlink(PID);
 define('SYNC', file_exists(PID));
 
 if (isset($_POST['sync'])) {
