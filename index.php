@@ -359,17 +359,17 @@ arsort($programs);
 					<div class="tab-pane fade show active" id="pills-cookie" role="tabpanel" aria-labelledby="pills-home-tab">
 						<div class="form-group">
 							<input type="text" name="cookie" class="form-control" id="InputCookie"
-							       placeholder="Cookie" autocomplete="on">
+							       placeholder="Cookie" autocomplete="off">
 						</div>
 					</div>
 					<div class="tab-pane fade" id="pills-email" role="tabpanel" aria-labelledby="pills-profile-tab">
 						<div class="form-group">
 							<input type="email" name="email" class="form-control" id="InputEmail"
-							       placeholder="Email" autocomplete="on">
+							       placeholder="Email" autocomplete="off">
 						</div>
 						<div class="form-group">
 							<input type="password" name="password" class="form-control" id="InputPassword"
-							       placeholder="Password" autocomplete="on">
+							       placeholder="Password" autocomplete="off">
 						</div>
 					</div>
 				</div>
