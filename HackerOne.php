@@ -20,12 +20,14 @@ class HackerOne {
 	private $_token = null;
 	private $_tmp = null;
 	private $_cookie = null;
+	private $_cookie_file = null;
 	
-	function __construct($email, $password) {
-		$this->_email    = $email;
-		$this->_password = $password;
-		$this->_tmp      = sys_get_temp_dir();
-		$this->_cookie   = $this->_tmp . '/' . md5($this->_email . $this->_password);
+	function __construct($email, $password, $cookie = null) {
+		$this->_email       = $email;
+		$this->_password    = $password;
+		$this->_tmp         = sys_get_temp_dir();
+		$this->_cookie      = $cookie;
+		$this->_cookie_file = $this->_tmp . '/' . md5($this->_email . $this->_password);
 	}
 	
 	public function sign_in() {
@@ -73,7 +75,11 @@ class HackerOne {
 		return false;
 	}
 	
-	public function reputation() {
+	public function reputation($page = 1) {
+		$page = max($page, 1);
+		$data = $this->curl(sprintf($this->_endpoints['reputation'], $page));
+		$data = @json_decode($data['page'], true);
+		return $data;
 	}
 	
 	private function curl($url, $post = array(), $header = array()) {
@@ -88,6 +94,13 @@ class HackerOne {
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
 		
+		if (!empty($this->_cookie)) {
+			$header[] = 'Cookie: ' . $this->_cookie;
+		} else {
+			curl_setopt($curl, CURLOPT_COOKIEJAR, $this->_cookie_file);
+			curl_setopt($curl, CURLOPT_COOKIEFILE, $this->_cookie_file);
+		}
+		
 		if (!empty($this->_token)) {
 			$header[] = 'X-CSRF-Token: ' . $this->_token;
 		}
@@ -99,9 +112,6 @@ class HackerOne {
 			curl_setopt($curl, CURLOPT_POST, 1);
 			curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($post));
 		}
-		
-		curl_setopt($curl, CURLOPT_COOKIEJAR, $this->_cookie);
-		curl_setopt($curl, CURLOPT_COOKIEFILE, $this->_cookie);
 		
 		curl_setopt($curl, CURLOPT_REFERER, 'https://hackerone.com/');
 		curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36 OPR/41.0.2353.46");

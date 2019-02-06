@@ -36,13 +36,13 @@ define('FIRST_H1', (count($bugs_h1) === 0));
 
 $bugs_other = glob(DB_OTHER . "*");
 
-if (isset($_POST['email'], $_POST['password'])) {
+if (isset($_POST['cookie'])) {
 	
 	touch(PID);
 	
 	include 'HackerOne.php';
 	
-	$h1   = new HackerOne($_POST['email'], $_POST['password']);
+	$h1   = new HackerOne($_POST['email'], $_POST['password'], $_POST['cookie']);
 	$user = $h1->current_user();
 	
 	if (empty($user)) {
@@ -303,26 +303,46 @@ arsort($programs);
 	<div class="modal-dialog" role="document">
 		<form class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="exampleModalLabel">Sign In</h5>
+				<h5 class="modal-title" id="exampleModalLabel">Auth</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
 			<div class="modal-body">
-				<div class="form-group">
-					<label for="InputEmail">Email address</label>
-					<input type="email" name="email" class="form-control" id="InputEmail" aria-describedby="emailHelp"
-					       placeholder="Enter email">
-				</div>
-				<div class="form-group">
-					<label for="InputPassword">Password</label>
-					<input type="password" name="password" class="form-control" id="InputPassword"
-					       placeholder="Password">
+				<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+					<li class="nav-item">
+						<a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-cookie" role="tab" aria-controls="pills-home" aria-selected="true">
+							Cookie
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-email" role="tab" aria-controls="pills-profile" aria-selected="false">
+							Email/Password
+						</a>
+					</li>
+				</ul>
+				<div class="tab-content" id="pills-tabContent">
+					<div class="tab-pane fade show active" id="pills-cookie" role="tabpanel" aria-labelledby="pills-home-tab">
+						<div class="form-group">
+							<input type="text" name="cookie" class="form-control" id="InputCookie"
+							       placeholder="Cookie" autocomplete="on">
+						</div>
+					</div>
+					<div class="tab-pane fade" id="pills-email" role="tabpanel" aria-labelledby="pills-profile-tab">
+						<div class="form-group">
+							<input type="email" name="email" class="form-control" id="InputEmail"
+							       placeholder="Email" autocomplete="on">
+						</div>
+						<div class="form-group">
+							<input type="password" name="password" class="form-control" id="InputPassword"
+							       placeholder="Password" autocomplete="on">
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-				<button type="submit" class="btn btn-primary">Sign In</button>
+				<button type="submit" class="btn btn-primary">Auth</button>
 			</div>
 		</form>
 	</div>
