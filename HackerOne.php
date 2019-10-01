@@ -10,7 +10,7 @@ class HackerOne {
 	private $_endpoints = array(
 		'current_user' => 'https://hackerone.com/current_user',
 		'sign_in'      => 'https://hackerone.com/users/sign_in',
-		'bugs'         => 'https://hackerone.com/bugs.json?sort_type=latest_activity&sort_direction=%s&limit=%d&page=%d',
+		'bugs'         => 'https://hackerone.com/bugs.json',
 		'report'       => 'https://hackerone.com/reports/%d.json',
 		'reputation'   => 'https://hackerone.com/settings/reputation/log?page=%d',
 	);
@@ -62,7 +62,13 @@ class HackerOne {
 	
 	public function bugs($sort_direction = '', $page = 1, $limit = 100) {
 		$page = max($page, 1);
-		$data = $this->curl(sprintf($this->_endpoints['bugs'], $sort_direction, $limit, $page));
+		$post = array(
+			'sort_type' => 'latest_activity',
+			'sort_direction' => $sort_direction,
+			'limit' => $limit,
+			'page' => $page,
+		);
+		$data = $this->curl($this->_endpoints['bugs'], $post);
 		$data = @json_decode($data['page'], true);
 		return $data;
 	}
